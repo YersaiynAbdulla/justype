@@ -144,3 +144,63 @@
 .guest-note a {
   color: var(--accent);
 }
+
+/* Mode toggle */
+.mode-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+}
+
+.mode-toggle {
+  display: flex;
+  gap: 2px;
+}
+
+.mode-btn {
+  padding: 6px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: var(--font-type);
+  transition: all 0.15s;
+}
+
+.mode-btn:hover { color: var(--text); }
+
+.mode-btn.active {
+  background: var(--accent-glow);
+  color: var(--accent);
+}
+
+.divider-v {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+.word-progress {
+  font-family: var(--font-type);
+  font-size: 20px;
+  color: var(--text-muted);
+  min-width: 80px;
+  text-align: right;
+}
+
+/* Extra chars typed beyond word length */
+.char-extra {
+  color: var(--error);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Missing chars (word too short) */
+.char-missing {
+  color: var(--error);
+  opacity: 0.5;
+}
