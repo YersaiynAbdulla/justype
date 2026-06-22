@@ -1,7 +1,11 @@
 import { Link } from 'react-router-dom'
 import './ResultCard.css'
 
-export default function ResultCard({ wpm, accuracy, correctWords, errorCount, timeLimit, onRetry }) {
+export default function ResultCard({
+  wpm, accuracy, correctWords, errorCount,
+  mode, timeLimit, wordGoal, timeTaken,
+  onRetry
+}) {
   return (
     <div className="result-container">
       <div className="result-wpm">
@@ -25,9 +29,21 @@ export default function ResultCard({ wpm, accuracy, correctWords, errorCount, ti
           <span className="stat-label">errors</span>
         </div>
         <div className="stat-divider" />
+        {mode === 'words' ? (
+          <div className="stat">
+            <span className="stat-value">{timeTaken}s</span>
+            <span className="stat-label">time taken</span>
+          </div>
+        ) : (
+          <div className="stat">
+            <span className="stat-value">{timeLimit}s</span>
+            <span className="stat-label">time</span>
+          </div>
+        )}
+        <div className="stat-divider" />
         <div className="stat">
-          <span className="stat-value">{timeLimit}s</span>
-          <span className="stat-label">time</span>
+          <span className="stat-value">{mode === 'words' ? wordGoal : '∞'}</span>
+          <span className="stat-label">{mode === 'words' ? 'words' : 'mode'}</span>
         </div>
       </div>
 
