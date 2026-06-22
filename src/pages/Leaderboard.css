@@ -1,0 +1,129 @@
+.lb-page {
+  flex: 1;
+  padding: 48px 24px;
+}
+
+.lb-container {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.lb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lb-title {
+  font-family: var(--font-type);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.lb-filters {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+}
+
+.lb-filter-btn {
+  padding: 6px 16px;
+  border-radius: 7px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: var(--font-type);
+  transition: all 0.15s;
+}
+
+.lb-filter-btn:hover { color: var(--text); }
+
+.lb-filter-btn.active {
+  background: var(--accent-glow);
+  color: var(--accent);
+}
+
+.lb-loading, .lb-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-family: var(--font-type);
+  padding: 80px 0;
+  font-size: 15px;
+}
+
+.lb-table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.lb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.lb-table thead tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.lb-table th {
+  padding: 14px 20px;
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.lb-table td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.lb-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.lb-table tbody tr:hover td {
+  background: rgba(255,255,255,0.02);
+}
+
+.rank {
+  font-family: var(--font-type);
+  color: var(--text-dim);
+  width: 48px;
+}
+
+.player {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.wpm-cell {
+  font-family: var(--font-type);
+  font-size: 16px;
+  color: var(--accent) !important;
+  font-weight: 700;
+}
+
+.acc-cell {
+  font-family: var(--font-type);
+}
+
+.date-cell {
+  font-size: 12px;
+}
+
+.top-1 .player { color: #ffd700; }
+.top-2 .player { color: #c0c0c0; }
+.top-3 .player { color: #cd7f32; }

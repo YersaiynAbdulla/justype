@@ -1,0 +1,121 @@
+.history-page {
+  flex: 1;
+  padding: 48px 24px;
+}
+
+.history-container {
+  max-width: 820px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.history-title {
+  font-family: var(--font-type);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.history-loading, .history-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-family: var(--font-type);
+  padding: 80px 0;
+  font-size: 15px;
+}
+
+.history-link {
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.history-stats {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px 40px;
+}
+
+.hstat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.hstat-value {
+  font-family: var(--font-type);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.hstat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.hstat-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--border);
+}
+
+.history-table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.history-table thead tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.history-table th {
+  padding: 14px 20px;
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.history-table td {
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: var(--font-type);
+  font-size: 13px;
+}
+
+.history-table tbody tr:last-child td { border-bottom: none; }
+.history-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
+
+.hwpm {
+  color: var(--accent) !important;
+  font-weight: 700;
+  font-size: 15px !important;
+}
+
+.hacc { color: var(--text) !important; }
+.herr { color: var(--error) !important; }
+
+.hdate {
+  color: var(--text-dim) !important;
+  font-size: 12px !important;
+  font-family: var(--font-ui) !important;
+}
