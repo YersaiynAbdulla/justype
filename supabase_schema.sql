@@ -1,6 +1,6 @@
 -- Run this in your Supabase SQL editor
 
--- Results table (individual test runs)
+-- Results table
 create table results (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade not null,
@@ -8,14 +8,15 @@ create table results (
   accuracy integer not null,
   correct_words integer not null,
   error_count integer not null default 0,
-  time_limit integer not null default 30,
+  mode text not null default 'time',        -- 'time' | 'words'
+  time_limit integer,                        -- seconds, set for time mode
+  word_goal integer,                         -- word count, set for words mode
   created_at timestamptz default now()
 );
 
 -- Enable RLS
 alter table results enable row level security;
 
--- Users can insert and read their own results
 create policy "Users can insert own results"
   on results for insert
   with check (auth.uid() = user_id);
@@ -24,17 +25,18 @@ create policy "Users can read own results"
   on results for select
   using (auth.uid() = user_id);
 
--- Leaderboard view (joins with auth.users for email)
+-- Leaderboard view
 create view leaderboard as
 select
   r.id,
   r.wpm,
   r.accuracy,
+  r.mode,
   r.time_limit,
+  r.word_goal,
   r.created_at,
   u.email
 from results r
 join auth.users u on r.user_id = u.id;
 
--- Grant public read access to leaderboard view
 grant select on leaderboard to anon, authenticated;
