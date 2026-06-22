@@ -1,92 +1,160 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { generateWords } from '../lib/words'
 
-export function useTypingTest(timeLimit = 30) {
-  const [words, setWords] = useState(() => generateWords(80))
-  const [typed, setTyped] = useState('')
+// mode: 'time' | 'words'
+// timeLimit: seconds (time mode)
+// wordGoal: number of words (words mode)
+export function useTypingTest({ mode = 'time', timeLimit = 30, wordGoal = 25 } = {}) {
+  const [words, setWords] = useState(() => generateWords(mode === 'words' ? wordGoal : 80))
   const [wordIndex, setWordIndex] = useState(0)
-  const [charIndex, setCharIndex] = useState(0)
-  const [correctWords, setCorrectWords] = useState(0)
-  const [errorCount, setErrorCount] = useState(0)
-  const [timeLeft, setTimeLeft] = useState(timeLimit)
+  const [currentInput, setCurrentInput] = useState('')
+  // wordStatuses[i] = { status: 'correct'|'incorrect', typed: string }
+  const [wordStatuses, setWordStatuses] = useState([])
   const [started, setStarted] = useState(false)
   const [finished, setFinished] = useState(false)
-  const [wordStatuses, setWordStatuses] = useState([])
-  const [currentInput, setCurrentInput] = useState('')
+  const [timeLeft, setTimeLeft] = useState(timeLimit)
+  const [elapsedMs, setElapsedMs] = useState(0)
 
   const timerRef = useRef(null)
+  const startTimeRef = useRef(null)
   const inputRef = useRef(null)
 
-  const wpm = finished
-    ? Math.round((correctWords / timeLimit) * 60)
-    : started
-    ? Math.round((correctWords / Math.max(timeLimit - timeLeft, 1)) * 60)
+  // --- derived stats ---
+  const correctWords = wordStatuses.filter(s => s.status === 'correct').length
+  const errorCount = wordStatuses.filter(s => s.status === 'incorrect').length
+  const totalTyped = wordStatuses.length
+
+  const elapsedSec = mode === 'time'
+    ? Math.max(timeLimit - timeLeft, 1)
+    : Math.max(elapsedMs / 1000, 1)
+
+  const wpm = finished || started
+    ? Math.round((correctWords / elapsedSec) * 60)
     : 0
 
-  const totalCharsTyped = wordStatuses.reduce((acc, s) => acc + (s === 'correct' ? words[wordStatuses.indexOf(s)]?.length + 1 : 0), 0)
-  const accuracy = wordStatuses.length > 0
-    ? Math.round((correctWords / Math.max(wordStatuses.length, 1)) * 100)
+  const accuracy = totalTyped > 0
+    ? Math.round((correctWords / totalTyped) * 100)
     : 100
 
+  const timeTaken = mode === 'words' ? (elapsedMs / 1000).toFixed(1) : null
+
+  // --- timer ---
   const startTimer = useCallback(() => {
     if (timerRef.current) return
-    timerRef.current = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
-          clearInterval(timerRef.current)
-          setFinished(true)
-          return 0
-        }
-        return t - 1
-      })
-    }, 1000)
-  }, [])
+    startTimeRef.current = Date.now()
 
+    if (mode === 'time') {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(t => {
+          if (t <= 1) {
+            clearInterval(timerRef.current)
+            setFinished(true)
+            return 0
+          }
+          return t - 1
+        })
+      }, 1000)
+    } else {
+      // word mode: just track elapsed
+      timerRef.current = setInterval(() => {
+        setElapsedMs(Date.now() - startTimeRef.current)
+      }, 100)
+    }
+  }, [mode])
+
+  // --- input handler ---
   const handleInput = useCallback((value) => {
     if (finished) return
 
+    // Start on first keystroke
     if (!started && value.length > 0) {
       setStarted(true)
       startTimer()
     }
 
+    // Space = submit current word
     if (value.endsWith(' ')) {
-      const trimmed = value.trim()
+      const trimmed = value.trimEnd()
+      // Don't allow submitting empty input
+      if (trimmed.length === 0) return
+
       const currentWord = words[wordIndex]
       const isCorrect = trimmed === currentWord
 
       setWordStatuses(prev => {
         const next = [...prev]
-        next[wordIndex] = isCorrect ? 'correct' : 'incorrect'
+        next[wordIndex] = { status: isCorrect ? 'correct' : 'incorrect', typed: trimmed }
         return next
       })
 
-      if (isCorrect) setCorrectWords(c => c + 1)
-      else setErrorCount(e => e + 1)
+      const nextIndex = wordIndex + 1
 
-      setWordIndex(i => i + 1)
+      // Word mode: check if done
+      if (mode === 'words' && nextIndex >= wordGoal) {
+        clearInterval(timerRef.current)
+        setElapsedMs(Date.now() - startTimeRef.current)
+        setWordIndex(nextIndex)
+        setCurrentInput('')
+        setFinished(true)
+        return
+      }
+
+      setWordIndex(nextIndex)
       setCurrentInput('')
-    } else {
-      setCurrentInput(value)
+      return
     }
-  }, [finished, started, wordIndex, words, startTimer])
 
-  const reset = useCallback((newTime = timeLimit) => {
+    // Backspace at start of input = go back to previous word
+    if (value === '' && currentInput === '' && wordIndex > 0) {
+      const prevIndex = wordIndex - 1
+      setWordIndex(prevIndex)
+      // Restore previous word's typed value so user can fix it
+      const prevTyped = wordStatuses[prevIndex]?.typed ?? ''
+      setCurrentInput(prevTyped)
+      // Remove previous word's status so it's "active" again
+      setWordStatuses(prev => {
+        const next = [...prev]
+        next[prevIndex] = undefined
+        return next
+      })
+      return
+    }
+
+    setCurrentInput(value)
+  }, [finished, started, wordIndex, words, startTimer, currentInput, wordStatuses, mode, wordGoal])
+
+  // --- keyboard handler for backspace detection ---
+  const handleKeyDown = useCallback((e) => {
+    // Detect backspace when input is already empty â†’ go back
+    if (e.key === 'Backspace' && currentInput === '' && wordIndex > 0) {
+      e.preventDefault()
+      const prevIndex = wordIndex - 1
+      const prevTyped = wordStatuses[prevIndex]?.typed ?? ''
+      setWordIndex(prevIndex)
+      setCurrentInput(prevTyped)
+      setWordStatuses(prev => {
+        const next = [...prev]
+        next[prevIndex] = undefined
+        return next
+      })
+    }
+  }, [currentInput, wordIndex, wordStatuses])
+
+  // --- reset ---
+  const reset = useCallback(() => {
     clearInterval(timerRef.current)
     timerRef.current = null
-    setWords(generateWords(80))
-    setTyped('')
+    startTimeRef.current = null
+    setWords(generateWords(mode === 'words' ? wordGoal : 80))
     setWordIndex(0)
-    setCharIndex(0)
-    setCorrectWords(0)
-    setErrorCount(0)
-    setTimeLeft(newTime)
+    setCurrentInput('')
+    setWordStatuses([])
     setStarted(false)
     setFinished(false)
-    setWordStatuses([])
-    setCurrentInput('')
+    setTimeLeft(timeLimit)
+    setElapsedMs(0)
     setTimeout(() => inputRef.current?.focus(), 50)
-  }, [timeLimit])
+  }, [mode, wordGoal, timeLimit])
 
   useEffect(() => {
     return () => clearInterval(timerRef.current)
@@ -98,6 +166,8 @@ export function useTypingTest(timeLimit = 30) {
     currentInput,
     wordStatuses,
     timeLeft,
+    elapsedMs,
+    timeTaken,
     started,
     finished,
     wpm,
@@ -105,6 +175,7 @@ export function useTypingTest(timeLimit = 30) {
     correctWords,
     errorCount,
     handleInput,
+    handleKeyDown,
     reset,
     inputRef,
   }
